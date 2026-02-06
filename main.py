@@ -1,5 +1,7 @@
 import os
 from mistralai import Mistral
+import numpy as np
+import faiss
 
 
 def test_agent(client: Mistral) -> None:
@@ -91,6 +93,52 @@ def test_embeddings(client: Mistral) -> None:
     # 1024
 
 
+def test_rag(client: Mistral) -> None:
+    with open('data/paul_graham_essay.txt', 'r') as opened:
+        text = opened.read()
+
+    chunk_size = 2048
+    chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+    print(len(chunks))
+
+    def get_text_embeddings(inputs):
+        response = client.embeddings.create(model="mistral-embed", inputs=inputs)
+        return np.array([data.embedding for data in response.data])
+
+    text_embeddings = get_text_embeddings(chunks)
+    print('text_embeddings', text_embeddings)
+
+    d = text_embeddings.shape[1]
+    index = faiss.IndexFlatL2(d)
+    index.add(text_embeddings)
+
+    question = "What were the two main things the author worked on before college?"
+    question_embeddings = get_text_embeddings([question])
+    print('question_embeddings', question_embeddings)
+
+    D, I = index.search(question_embeddings, k=2)  # distance, index
+    retrieved_chunk = [chunks[i] for i in I.tolist()[0]]
+    print('retrieved_chunk', retrieved_chunk)
+
+    prompt = f"""
+    Context information is below.
+    ---------------------
+    {retrieved_chunk}
+    ---------------------
+    Given the context information and not prior knowledge, answer the query.
+    Query: {question}
+    Answer:
+    """
+
+    messages = [{"role": "user", "content": prompt}]
+    chat_response = client.chat.complete(
+        model="mistral-medium-latest",
+        messages=messages
+    )
+    print('chat_response', chat_response)
+
+
+
 def main():
     api_key = os.environ.get("MISTRAL_API_KEY")
 
@@ -99,7 +147,8 @@ def main():
         # test_agent_conversation(client)
         # test_chat(client)
         # test_classify(client)
-        test_embeddings(client)
+        # test_embeddings(client)
+        test_rag(client)
 
 
 if __name__ == "__main__":
