@@ -1,0 +1,44 @@
+name: Local Config
+version: 1.0.0
+schema: v1
+models:
+  - name: Codestral
+    provider: mistral
+    model: codestral-latest
+    apiKey: xxx  # replace with a key generated at https://admin.mistral.ai/organization/api-keys
+    roles:
+      - autocomplete  # configure as the autocomplete model in the plugin settings
+  - name: Devstral
+    provider: mistral
+    model: devstral-latest
+    apiKey: xxx
+    roles:
+      - chat  # configure as the default chat model
+      - edit  # configure as the edit model
+      - apply
+  - name: Devstral Small
+    provider: mistral
+    model: devstral-small-latest
+    apiKey: xxx
+    roles:
+      - chat
+      - edit
+      - apply  # configure as the apply model
+  - name: Mistral Embed
+    provider: mistral
+    model: mistral-embed
+    apiKey: xxx
+    roles:
+      - embed  # configure as the embedding model
+  - name: Mistral Medium
+    provider: mistral
+    model: mistral-medium
+    apiKey: xxx
+    roles:
+      - chat  # can switch to it in the chat panel to chat about general topics I guess
+  - name: Mistral Large
+    provider: mistral
+    model: mistral-large
+    apiKey: xxx
+    roles:
+      - chat
