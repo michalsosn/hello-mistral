@@ -6,5 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "faiss-cpu>=1.13.2",
+    "langchain>=1.2.9",
+    "langchain-mistralai>=1.1.1",
     "mistralai>=1.11.1",
 ]
