@@ -1,9 +1,13 @@
-import langchain
 from langchain.agents import create_agent
 from langchain.agents.middleware import SummarizationMiddleware
 from langchain.chat_models import init_chat_model
 from langchain_core.callbacks import BaseCallbackHandler
 from langgraph.checkpoint.memory import InMemorySaver
+from langchain_core.documents import Document
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+from langchain_mistralai import MistralAIEmbeddings
 
 
 def test_model():
@@ -47,7 +51,7 @@ def test_basic_agent():
     )
 
     for message in result["messages"]:
-        print(type(message), message)
+        message.pretty_print()
 
 
 def test_agent_memory():
@@ -97,13 +101,47 @@ def test_agent_memory():
     )
 
     for message in result["messages"]:
-        print(type(message), message)
+        message.pretty_print()
 
+def test_rag_add_documents():
+    loader = WebBaseLoader("https://en.wikipedia.org/wiki/World_War_I")
+    docs = loader.load()
+    print("docs", len(docs), len(docs[0].page_content))
+
+    text_splitter = RecursiveCharacterTextSplitter() # chunk_size=1000, chunk_overlap=200, add_start_index=True
+    all_splits = text_splitter.split_documents(docs)
+    print("splits", len(all_splits), all_splits[5])
+
+    embeddings = MistralAIEmbeddings(model="mistral-embed")
+    vector_store = Chroma(
+        collection_name="wikipedia_ww1",
+        embedding_function=embeddings,
+        persist_directory="./db/chroma_langchain_db",
+    )
+
+    ids = vector_store.add_documents(documents=all_splits)
+    print(ids)
+
+def test_rag_search():
+    embeddings = MistralAIEmbeddings(model="mistral-embed")
+    vector_store = Chroma(
+        collection_name="wikipedia_ww1",
+        embedding_function=embeddings,
+        persist_directory="./db/chroma_langchain_db",
+    )
+
+    results = vector_store.similarity_search(
+        "america", k=3
+    )
+    for result in results:
+        print(result)
 
 def main():
     # test_model()
     # test_basic_agent()
-    test_agent_memory()
+    # test_agent_memory()
+    # test_rag_add_documents()
+    test_rag_search()
 
 
 if __name__ == "__main__":

@@ -12,3 +12,4 @@ wheels/
 *.swp
 .env
 .idea/
+db/

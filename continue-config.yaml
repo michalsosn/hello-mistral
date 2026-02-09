@@ -13,7 +13,7 @@ models:
     model: devstral-latest
     apiKey: xxx
     roles:
-      - chat  # configure as the default chat model
+      - chat  # configure as the default chat model, use it as the coding agent
       - edit  # configure as the edit model
       - apply
   - name: Devstral Small
@@ -35,7 +35,7 @@ models:
     model: mistral-medium
     apiKey: xxx
     roles:
-      - chat  # can switch to it in the chat panel to chat about general topics I guess
+      - chat  # can switch to it in the chat panel to chat about general topics I guess (not as the coding agent)
   - name: Mistral Large
     provider: mistral
     model: mistral-large
