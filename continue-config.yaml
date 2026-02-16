@@ -8,6 +8,8 @@ models:
     apiKey: xxx  # replace with a key generated at https://admin.mistral.ai/organization/api-keys
     roles:
       - autocomplete  # configure as the autocomplete model in the plugin settings
+    defaultCompletionOptions:
+      contextLength: 256000
   - name: Devstral
     provider: mistral
     model: devstral-latest
@@ -16,6 +18,32 @@ models:
       - chat  # configure as the default chat model, use it as the coding agent
       - edit  # configure as the edit model
       - apply
+    promptTemplates:
+      edit: &edit_template |
+        Context before the editable section:
+        \`\`\`{{{language}}}
+        {{{prefix}}}
+        \`\`\`
+        Editable section (modify only this part):
+        \`\`\`{{{language}}}
+        {{{codeToEdit}}}
+        \`\`\`
+        Context after the editable section:
+        \`\`\`{{{language}}}
+        {{{suffix}}}
+        \`\`\`
+
+        Edit the code above to perfectly satisfy the following user request:
+        {{{userInput}}}
+
+        Output ONLY the modified editable section.
+        Do not rewrite the context before or after.
+        Leave existing comments in place unless changes require modifying them.
+        Do not include explanations, tags, or extra markdown.
+    defaultCompletionOptions:
+      contextLength: 256000
+    capabilities:
+      - tool_use
   - name: Devstral Small
     provider: mistral
     model: devstral-small-latest
@@ -24,6 +52,12 @@ models:
       - chat
       - edit
       - apply  # configure as the apply model
+    promptTemplates:
+      edit: *edit_template
+    defaultCompletionOptions:
+      contextLength: 256000
+    capabilities:
+      - tool_use
   - name: Mistral Embed
     provider: mistral
     model: mistral-embed
